@@ -13,6 +13,7 @@ contract DNADAO {
         uint256 voteCountCon;
         uint256 voteCountAbstain;
         bool executed;
+        bool approved;
         address recipient;
         uint256 amount;
     }
@@ -24,7 +25,14 @@ contract DNADAO {
     mapping(address => address[]) public delegation;
     address public owner;
     uint256 public pricePerShare;
-    bool public saleActive = true;
+    bool public saleEnabled = true;
+
+    event BuyOrder(address buyer, uint256 amount);
+    event SaleState(bool enabled);
+    event Delegation(address to, bool addedRemoved);
+    event NewProposal(string title);
+    event ExecutedProposal(string title, bool approved);
+    event Vote(address member);
 
     constructor(address _tokenAddress, uint256 _pricePerShare) {
         token = DNAERC20(_tokenAddress);
@@ -46,25 +54,48 @@ contract DNADAO {
         return(shares[msg.sender] > 0);
     }
 
-    function endSale() external onlyOwner {
-        require(saleActive, "Sale already inactive");
-        saleActive = false;
+    function disableSale() external onlyOwner {
+        require(saleEnabled, "Sale already disabled");
+        saleEnabled = false;
+        emit SaleState(saleEnabled);
     }
 
-    function activeSale() external onlyOwner {
-        require(!saleActive, "Sale already active");
-        saleActive = true;
+    function enableSale() external onlyOwner {
+        require(!saleEnabled, "Sale already enabled");
+        saleEnabled = true;
+        emit SaleState(saleEnabled);
     }
 
     function buyShares(uint256 amount) external {
-        require(saleActive, "Sale is closed");
+        require(saleEnabled, "Sale is closed");
         require(token.transferFrom(msg.sender, address(this), amount * pricePerShare), "Transfer failed");
         shares[msg.sender] += amount;
+        emit BuyOrder(msg.sender, amount);
     }
 
-    function delegateVote(address to) external onlyMembers{
-        delegation[to].push(msg.sender);
+    function delegateMember(address member) external onlyMembers{
+        require(shares[member] > 0, "Address not owned by a member");
+        delegation[member].push(msg.sender);
+        emit Delegation(member, true);
     }
+
+    function revokeDelegation(address to) external onlyMembers {
+        address[] storage delegators = delegation[to];
+        bool found = false;
+
+        for (uint256 i = 0; i < delegators.length; i++) {
+            if (delegators[i] == msg.sender) {
+                found = true;
+                delegators[i] = delegators[delegators.length - 1];
+                delegators.pop();
+                break;
+            }
+        }
+
+        require(found, "Delegation not found");
+        emit Delegation(to, false);
+    }
+
 
     function createProposal(
         string calldata title,
@@ -83,9 +114,11 @@ contract DNADAO {
             voteCountCon: 0,
             voteCountAbstain: 0,
             executed: false,
+            approved: false,
             recipient: recipient,
             amount: amount
         }));
+        emit NewProposal(title);
         return proposalAddr;
     }
 
@@ -103,7 +136,7 @@ contract DNADAO {
         revert("Proposal not found");
     }
 
-    function vote(address proposalAddr, bool support, bool abstain) external onlyMembers {
+    function voteProposal(address proposalAddr, bool support, bool abstain) external onlyMembers {
         address voter = msg.sender;
         uint256 totalDelegatedShares = shares[voter];
 
@@ -115,6 +148,7 @@ contract DNADAO {
         for (uint256 i = 0; i < delegation[msg.sender].length; i++) {
             address delegate = delegation[msg.sender][i];
             if(!votes[proposalId][delegate]){
+                votes[proposalId][delegate] = true;
                 totalDelegatedShares += shares[delegation[msg.sender][i]];
             }
         }
@@ -128,6 +162,7 @@ contract DNADAO {
         }
 
         votes[proposalId][msg.sender] = true;
+        emit Vote(msg.sender);
     }
 
     function executeProposal(address proposalAddr) external onlyOwner {
@@ -138,12 +173,14 @@ contract DNADAO {
         uint256 totalVotes = proposal.voteCountPro + proposal.voteCountCon + proposal.voteCountAbstain;
         require(totalVotes > 0, "Not enoght votes");
 
+        proposal.executed = true;
         if (proposal.voteCountPro > proposal.voteCountCon) {
-            proposal.executed = true;
+            proposal.approved = true;
             if (proposal.recipient != address(0) && proposal.amount > 0) {
                 require(token.transfer(proposal.recipient, proposal.amount), "Token transfer failed");
             }
         }
+        emit ExecutedProposal(proposal.title, proposal.approved);
     }
 
     function getProposals() external view returns (Proposal[] memory) {

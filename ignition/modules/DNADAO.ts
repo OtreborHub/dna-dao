@@ -1,6 +1,7 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 
-const ERC20_ADDRESS = "0x0BdA1854eC82Bbe5CB1fC1D73fC0FbD48D8AAfcb";
+//Deployare prima il contratto DNAERC20: l'indirizzo del contratto ERC20 andrà incollato qui
+const ERC20_ADDRESS = "0x275417875f1B0696173b299bF041fD2F2B5C5fad";
 const PRICE_PER_SHARE = 1;
 
 

@@ -18,6 +18,8 @@ contract DNAERC20 is ERC20 {
         tokenPrice = _tokenPrice;
     }
 
+    event BuyOrder(address buyer, uint256 amount);
+
     modifier onlyOwner() {
         require(msg.sender == owner, "Sender must be the owner");
         _;
@@ -31,9 +33,10 @@ contract DNAERC20 is ERC20 {
         require(msg.value > 0, "Insufficient value sent");
 
         uint256 tokensToBuy = msg.value / tokenPrice;
-        require(tokensToBuy <= balanceOf(owner), "Non ci sono abbastanza token disponibili");
+        require(tokensToBuy <= balanceOf(owner), "Not enough supply available");
 
         _transfer(owner, msg.sender, tokensToBuy);
+        emit BuyOrder(msg.sender, tokensToBuy);
     }
 
     function updateTokenPrice(uint256 newPrice) public onlyOwner {
