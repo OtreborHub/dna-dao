@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract DNAERC20 is ERC20 {
     uint256 public tokenPrice;
-    address private owner;
+    address public owner;
 
     constructor(
         string memory name,
@@ -19,6 +19,7 @@ contract DNAERC20 is ERC20 {
     }
 
     event BuyOrder(address buyer, uint256 amount);
+    event UpdatePrice(uint256 newPrice);
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Sender must be the owner");
@@ -41,5 +42,6 @@ contract DNAERC20 is ERC20 {
 
     function updateTokenPrice(uint256 newPrice) public onlyOwner {
         tokenPrice = newPrice;
+        emit UpdatePrice(newPrice);
     }
 }

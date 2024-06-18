@@ -45,6 +45,13 @@ describe ("ERC20 DNA Contract", function () {
       await token.connect(addr2).approve(dao.getAddress(), ethers.parseEther("5"));
       expect(await token.allowance(addr2.address, dao.getAddress())).to.be.equal(ethers.parseEther("5"));
   });
+
+    it("Should not allow user changing DNA Token price", async function () {
+        const { token, addr1 } = await loadFixture(deployDAOFixture);
+        
+        await token.connect(addr1).buyDNA({value: ethers.parseEther("10")});
+        await expect (token.connect(addr1).updateTokenPrice(2)).to.be.revertedWith("Sender must be the owner");
+    });
 });
 
 describe ("DNA Token Event", function () {
@@ -55,7 +62,7 @@ describe ("DNA Token Event", function () {
       return { token, dao, owner, addr1 };
   }
 
-  it("Should launch BuyOrder Event (DNA Token)", async function () {
+  it("Should launch BuyOrder Event", async function () {
       const { token, addr1 } = await loadFixture(deployDAOFixture);
       
       await expect( 
@@ -63,7 +70,7 @@ describe ("DNA Token Event", function () {
           ).to.emit(token, "BuyOrder")
   });
 
-  it("Should launch Approval Event (DNA Token)", async function () {
+  it("Should launch Approval Event", async function () {
       const { token, dao, addr1 } = await loadFixture(deployDAOFixture);
       
       await token.connect(addr1).buyDNA({value: ethers.parseEther("10")});
@@ -71,4 +78,11 @@ describe ("DNA Token Event", function () {
           token.connect(addr1).approve(dao.getAddress(), ethers.parseEther("10"))
           ).to.emit(token, "Approval");
   });
+
+  it("Should launch UpdatePrice Event", async function () {
+    const { token, owner, addr1 } = await loadFixture(deployDAOFixture);
+    await expect(
+        token.connect(owner).updateTokenPrice(2)
+        ).to.emit(token, "UpdatePrice");
+});
 });
