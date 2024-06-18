@@ -38,7 +38,4 @@ module.exports = {
   }
 }
 
-// npx hardhat ignition deploy ./ignition/modules/DNAERC20.ts --network sepolia
-// npx hardhat ignition deploy ./ignition/modules/DNADAO.ts --network sepolia
-
 export default config;

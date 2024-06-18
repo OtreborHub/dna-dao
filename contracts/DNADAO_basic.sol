@@ -3,10 +3,9 @@ pragma solidity ^0.8.20;
 
 import "./DNAERC20.sol";
 
-contract DNADAO {
+contract DNADAO_basic {
 
     struct Proposal {
-        address proposalAddr;
         string title;
         string description;
         uint256 voteCountPro;
@@ -23,15 +22,14 @@ contract DNADAO {
     mapping(address => uint256) public shares;
     mapping(uint256 => mapping(address => bool)) public votes;
     mapping(address => address[]) public delegation;
-    address public owner;
+    address private owner;
     uint256 public pricePerShare;
     bool public saleEnabled = true;
 
     event BuyOrder(address buyer, uint256 amount);
     event SaleState(bool enabled);
     event DelegationState(address to, bool addedRemoved);
-    event ProposalState(string title, bool created, bool approved);
-    event Vote(address member);
+    event ProposalState(uint256 index, bool create, bool executed);
 
     constructor(address _tokenAddress, uint256 _pricePerShare) {
         token = DNAERC20(_tokenAddress);
@@ -49,30 +47,12 @@ contract DNADAO {
         _;
     }
 
-    function isMember() external view returns(bool) {
-        return(shares[msg.sender] > 0);
-    }
-
     function getProposals() external view returns (Proposal[] memory) {
         return proposals;
     }
 
     function isEmpty(string calldata s1) private pure returns(bool) {
         return keccak256(abi.encode(s1)) == keccak256(abi.encode(""));
-    }
-
-    function generateAddress(string memory value) private pure returns(address){
-        return address(uint160(uint256(keccak256(abi.encodePacked(value)))));
-    }
-
-    function searchProposal(address proposalAddr) public view returns(uint256, Proposal memory) {
-        for(uint i = 0; i < proposals.length; i++){
-            if(proposals[i].proposalAddr == proposalAddr){
-                return (i, proposals[i]);
-            }
-        }
-
-        revert("Proposal not found");
     }
 
     function disableSale() external onlyOwner {
@@ -118,17 +98,16 @@ contract DNADAO {
         emit DelegationState(member, false);
     }
 
+
     function createProposal(
         string calldata title,
         string calldata description,
         address recipient,
         uint256 amount
-    ) external onlyMembers returns(address) {
+    ) external onlyMembers {
         require(!isEmpty(title), "Empty title");
         require(!isEmpty(description), "Empty description");
-        address proposalAddr = generateAddress(string.concat(title, description));
         proposals.push(Proposal({
-            proposalAddr: proposalAddr,
             title: title,
             description: description,
             voteCountPro: 0,
@@ -139,15 +118,14 @@ contract DNADAO {
             recipient: recipient,
             amount: amount
         }));
-        emit ProposalState(title, true, false);
-        return proposalAddr;
+        emit ProposalState(proposals.length - 1, true, false);
     }
 
-    function voteProposal(address proposalAddr, bool support, bool abstain) external onlyMembers {
+    function voteProposal(uint256 proposalId, bool support, bool abstain) external onlyMembers {
         address voter = msg.sender;
         uint256 totalDelegatedShares = shares[voter];
 
-        (uint256 proposalId, ) = searchProposal(proposalAddr);
+        require(proposalId < proposals.length, "Proposal not found");
         require(!votes[proposalId][msg.sender], "Already voted");
         Proposal storage proposal = proposals[proposalId];
 
@@ -169,11 +147,10 @@ contract DNADAO {
         }
 
         votes[proposalId][msg.sender] = true;
-        emit Vote(msg.sender);
     }
 
-    function executeProposal(address proposalAddr) external onlyOwner {
-        (uint256 proposalId, ) = searchProposal(proposalAddr);
+    function executeProposal(uint256 proposalId) external onlyOwner {
+        require(proposalId < proposals.length, "Proposal not found");
         Proposal storage proposal = proposals[proposalId];
         require(!proposal.executed, "Proposal already executed");
 
@@ -187,7 +164,7 @@ contract DNADAO {
                 require(token.transfer(proposal.recipient, proposal.amount), "Token transfer failed");
             }
         }
-        emit ProposalState(proposal.title, false, proposal.approved);
+        emit ProposalState(proposalId, false, proposal.approved);
     }
 
 

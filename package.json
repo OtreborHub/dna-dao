@@ -1,7 +1,7 @@
 {
   "name": "dna-dao",
   "version": "1.0.0",
-  "description": "Dapp for DAO Smart Contracts for Start2Impact University",
+  "description": "DAO Smart Contracts per Start2Impact University",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
