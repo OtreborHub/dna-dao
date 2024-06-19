@@ -16,21 +16,24 @@ I contratti sono stati creati, testati e deployati per mezzo di hardhat:
 >
 >
 >Nella cartella **/contract**, come anticipato, troverai 3 contratti: <br>
-Il contratto **DNAERC20** (contratto Token) rappresenta il Token DNA di riferimento ed estende tutte le funzionalità dell'interfaccia ERC20. 
-Inoltre permette la gestione del prezzo del token per mezzo della funzione updateTokenPrice. Sia l'aggiornamento del prezzo che l'acquisto degli stessi emettono un evento personalizzato (UpdatePrice e BuyOrder).<br>
+Il contratto **DNAERC20** (contratto Token) rappresenta il Token DNA di riferimento ed estende tutte le funzionalità dell'interfaccia ERC20. In aggiunta permette la gestione del prezzo del token per mezzo della funzione updateTokenPrice.<br>
 >
->Il contratto **DNADAO_basic** (contratto DAO_basic) è il contratto che rappresenta le funzionalità minime di gestione della DAO per l'organizzazione DNA. In particolare il contratto DAO_basic permette l'acquisto di Shares (previa approvazione dei Token su DNAERC20), la creazione, il voto e l'esecuzione di proposte. Ogni proposta contiene un titolo ed una descrizione: facoltativamente è possibile inviare dei DNA ad un membro dell'organizzazione qualora la proposta venga accolta. E' inoltre possibile delegare il voto a più di un membro e revocare le delege inserite. <br>
+>Il contratto **DNADAO_basic** (contratto DAO_basic) è il contratto che rappresenta le funzionalità minime di gestione della DAO per l'organizzazione DNA. In particolare il contratto DAO_basic permette l'acquisto di Shares (previa approvazione dei Token su DNAERC20) dopo il quale sarà possibile la creazione, il voto e l'esecuzione di proposte. Ogni proposta contiene un titolo ed una descrizione: facoltativamente è possibile inviare dei DNA ad un membro dell'organizzazione qualora la proposta venga accolta. E' inoltre possibile delegare il voto a più di un membro e revocare le delege inserite. <br>
 Ogni voto è in DNA Shares (o Shares), quindi quante più Shares si possiedono quanto più il voto inserito incide sulla sua esecuzione o respingimento.
-Quando un delegato vota, lo stesso voto sarà registrato anche a tutti i suoi delegatari, esclusi quei membri che hanno già eseguito l'operazione di voto.<br>
+Quando un delegato vota, lo stesso voto sarà registrato anche per tutti i suoi delegatari, esclusi quei membri che hanno già eseguito l'operazione di voto.<br>
 >
->Il contratto **DNADAO** (contratto DAO) rappresenta le funzionalità di gestione della DAO per l'organizzazione DNA in relazione al suo applicativo front-end. La principale differenza con il contratto DAO_basic è la presenza di funzioni a favore dell'interfaccia grafica. 
-In questa versione, ad ogni proposta viene associato un indirizzo (generato a partire dal titolo e dalla descrizioni scelti) e sia i voti che le esecuzioni sono gestite tramite questo indirizzo.
+>Il contratto **DNADAO** (contratto DAO) rappresenta le funzionalità di gestione della DAO per l'organizzazione DNA in relazione al suo applicativo front-end. La principali differenze con il contratto DAO_basic sono la presenza di funzioni a favore dell'interfaccia grafica, e l'introduzione degli eventi Solidity a supporto della gestione dei tempismi sull'applicativo.
+In questa versione, ad ogni proposta viene associato un indirizzo, generato a partire dal titolo e dalla descrizioni scelti: sia i voti che le esecuzioni sono gestiti tramite l'indizzo associato alla proposta.
 >
->Le uniche funzioni di scrittura riservate all'Owner sono l'aggiornamento del prezzo dei DNA Token, l'abilitazione e la disattivazione della vendita degli share e l'esecuzione delle proposte.
+>Le uniche funzioni di scrittura riservate all'Owner sono l'aggiornamento del prezzo dei DNA Token, l'abilitazione e la disattivazione della vendita degli Shares e l'esecuzione delle proposte.
+Il metodo di aggiornamento del prezzo dei DNA Token vuole essere una sorta di isolamento della DAO dal Token. In questo caso se l'Owner vuole duplicare il prezzo delle Shares, otterrà lo stesso risultato duplicando il prezzo dei DNA Token.
+
+Nota: L'applicativo impone che l'update del prezzo del DNA Token si possa effettuare soltato quando la vendita degli Shares è disabilitata.
+
 >
 >La cartella **/ignition** contiene i moduli di deploy per i contratti del progetto
 >
->La cartella **/test** contiene una serie di test su funzioni ed eventi dei contratti del progetto
+>La cartella **/test** contiene una serie di test su funzioni ed eventi dei contratti del progetto.
 
 
 <h3> Compilazione </h3>
