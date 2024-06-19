@@ -26,11 +26,6 @@ contract DNADAO_basic {
     uint256 public pricePerShare;
     bool public saleEnabled = true;
 
-    event BuyOrder(address buyer, uint256 amount);
-    event SaleState(bool enabled);
-    event DelegationState(address to, bool addedRemoved);
-    event ProposalState(uint256 index, bool create, bool executed);
-
     constructor(address _tokenAddress, uint256 _pricePerShare) {
         token = DNAERC20(_tokenAddress);
         pricePerShare = _pricePerShare;
@@ -58,26 +53,22 @@ contract DNADAO_basic {
     function disableSale() external onlyOwner {
         require(saleEnabled, "Sale already disabled");
         saleEnabled = false;
-        emit SaleState(saleEnabled);
     }
 
     function enableSale() external onlyOwner {
         require(!saleEnabled, "Sale already enabled");
         saleEnabled = true;
-        emit SaleState(saleEnabled);
     }
 
     function buyShares(uint256 amount) external {
         require(saleEnabled, "Sale is closed");
         require(token.transferFrom(msg.sender, address(this), amount * pricePerShare), "Transfer failed");
         shares[msg.sender] += amount;
-        emit BuyOrder(msg.sender, amount);
     }
 
     function delegateMember(address member) external onlyMembers{
         require(shares[member] > 0, "Address not owned by a member");
         delegation[member].push(msg.sender);
-        emit DelegationState(member, true);
     }
 
     function revokeDelegation(address member) external onlyMembers {
@@ -95,7 +86,6 @@ contract DNADAO_basic {
         }
 
         require(found, "Delegation not found");
-        emit DelegationState(member, false);
     }
 
 
@@ -118,7 +108,6 @@ contract DNADAO_basic {
             recipient: recipient,
             amount: amount
         }));
-        emit ProposalState(proposals.length - 1, true, false);
     }
 
     function voteProposal(uint256 proposalId, bool support, bool abstain) external onlyMembers {
@@ -164,7 +153,6 @@ contract DNADAO_basic {
                 require(token.transfer(proposal.recipient, proposal.amount), "Token transfer failed");
             }
         }
-        emit ProposalState(proposalId, false, proposal.approved);
     }
 
 

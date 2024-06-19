@@ -62,12 +62,12 @@ describe ("DNA Token Event", function () {
       return { token, dao, owner, addr1 };
   }
 
-  it("Should launch BuyOrder Event", async function () {
+  it("Should launch Transfer Event", async function () {
       const { token, addr1 } = await loadFixture(deployDAOFixture);
       
       await expect( 
           token.connect(addr1).buyDNA({value: ethers.parseEther("10")})
-          ).to.emit(token, "BuyOrder")
+          ).to.emit(token, "Transfer")
   });
 
   it("Should launch Approval Event", async function () {
@@ -80,7 +80,7 @@ describe ("DNA Token Event", function () {
   });
 
   it("Should launch UpdatePrice Event", async function () {
-    const { token, owner, addr1 } = await loadFixture(deployDAOFixture);
+    const { token, owner } = await loadFixture(deployDAOFixture);
     await expect(
         token.connect(owner).updateTokenPrice(2)
         ).to.emit(token, "UpdatePrice");

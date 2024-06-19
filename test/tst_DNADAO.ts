@@ -361,37 +361,28 @@ describe("DAO Contract Event", function () {
             ).to.emit(dao, "SaleState").withArgs(false);
     });
 
-    it("Should launch NewProposal Event", async function () {
+    it("Should launch ProposalState Event on Creation and Execution", async function () {
         const { dao, token, addr1, addr2, title, description } = await loadFixture(deployDAOFixture);
         await token.connect(addr1).approve(dao.getAddress(), ethers.parseEther("10"));
         await dao.connect(addr1).buyShares(10);
 
+        const proposalAddr = generateProposalAddress(title + description);
         await expect(
             dao.connect(addr1).createProposal(title, description, addr2.address, ethers.parseEther("1"))
-            ).to.emit(dao, "ProposalState");
+            ).to.emit(dao, "ProposalState").withArgs(title, true, false);
+
+
+        let proposals = await dao.getProposals();
+        expect(proposalAddr).to.equal(proposals[0].proposalAddr);
+
+        dao.connect(addr1).voteProposal(proposalAddr, true, false)
+
+        await expect(
+            dao.executeProposal(proposalAddr)
+            ).to.emit(dao, "ProposalState").withArgs(title, false, true);
     });
 
-    it("Should launch DelegationState Event on Delegation and Revoke Delegaiton", async function () {
-        const { dao, token, addr1, addr2, title, description } = await loadFixture(deployDAOFixture);
-        
-        await token.connect(addr1).approve(dao.getAddress(), ethers.parseEther("10"));
-        await dao.connect(addr1).buyShares(10);
-        await token.connect(addr2).approve(dao.getAddress(), ethers.parseEther("5"));
-        await dao.connect(addr2).buyShares(5);
-  
-        expect(await dao.shares(addr1.address)).to.equal(10);
-        expect(await dao.shares(addr2.address)).to.equal(5);
-  
-        await expect(
-          dao.connect(addr2).delegateMember(addr1.address)
-          ).to.emit(dao, "DelegationState");
-  
-        await expect(
-          dao.connect(addr2).revokeDelegation(addr1.address)
-          ).to.emit(dao, "DelegationState");
-    });
-
-    it("Should launch Vote and ExecutedProposal Event", async function () {
+    it("Should launch Vote Event", async function () {
         const { dao, token, addr1, addr2, title, description } = await loadFixture(deployDAOFixture);
         await token.connect(addr1).approve(dao.getAddress(), ethers.parseEther("10"));
         await dao.connect(addr1).buyShares(10);
@@ -405,9 +396,25 @@ describe("DAO Contract Event", function () {
         await expect(
             dao.connect(addr1).voteProposal(proposalAddr, true, false)
             ).to.emit(dao, "Vote");
-
+    });
+    
+    it("Should launch DelegationState Event on Delegation and Revoke Delegation", async function () {
+        const { dao, token, addr1, addr2, title, description } = await loadFixture(deployDAOFixture);
+        
+        await token.connect(addr1).approve(dao.getAddress(), ethers.parseEther("10"));
+        await dao.connect(addr1).buyShares(10);
+        await token.connect(addr2).approve(dao.getAddress(), ethers.parseEther("5"));
+        await dao.connect(addr2).buyShares(5);
+  
+        expect(await dao.shares(addr1.address)).to.equal(10);
+        expect(await dao.shares(addr2.address)).to.equal(5);
+  
         await expect(
-            dao.executeProposal(proposalAddr)
-            ).to.emit(dao, "ProposalState");
+          dao.connect(addr2).delegateMember(addr1.address)
+          ).to.emit(dao, "DelegationState").withArgs(addr1.address, true);
+  
+        await expect(
+          dao.connect(addr2).revokeDelegation(addr1.address)
+          ).to.emit(dao, "DelegationState").withArgs(addr1.address, false);
     });
 });
