@@ -1,5 +1,5 @@
 # dna-dao
-<h3>DAO Smart Contracts per Start2Impact University</h3>
+<h3>DAO Governance Smart Contracts per Start2Impact University</h3>
 
 >
 >Il progetto **dna-dao** contiene i contratti che gestiranno la governance di un'azienda di divulgazione scientifica chiamata DnA. I contratti hanno il compito di gestire l'intero ciclo di vita di una serie di proposte sottoposte ai membri della governance e permettere a nuovi membri di acquistare parte delle azioni DnA.<br>
@@ -27,9 +27,6 @@ In questa versione, ad ogni proposta viene associato un indirizzo, generato a pa
 >
 >Le uniche funzioni di scrittura riservate all'Owner sono l'aggiornamento del prezzo dei DNA Token, l'abilitazione e la disattivazione della vendita degli Shares e l'esecuzione delle proposte.
 Il metodo di aggiornamento del prezzo dei DNA Token vuole essere una sorta di isolamento della DAO dal Token. In questo caso se l'Owner vuole duplicare il prezzo delle Shares, otterrà lo stesso risultato duplicando il prezzo dei DNA Token.
-
-Nota: L'applicativo impone che l'update del prezzo del DNA Token si possa effettuare soltato quando la vendita degli Shares è disabilitata.
-
 >
 >La cartella **/ignition** contiene i moduli di deploy per i contratti del progetto
 >
@@ -54,5 +51,9 @@ La rete di testnet configurata è Sepolia, è possibile configurare un'altra ret
 <u>Deployare prima il contratto DNAERC20</u>: l'indirizzo del contratto Token dovrà essere utilizzato nel modulo ignition del contratto DAO (o DAO_basic) che si vuole rilasciare.
 <br><br>
 
-E' possibile consultare il progetto dell'applicativo web al repository: https://github.com/OtreborHub/dna-dapp <br>
-Se invece sei interessato a vedere come funziona l'interfaccia visita: https://dna-dapp.vercel.app
+<h3>Sitemap</h3>
+
+Dapp Repo: https://github.com/OtreborHub/dna-dapp <br>
+Deployed DApp: https://dna-dapp.vercel.app <br>
+Contratto DNAERC20: https://sepolia.etherscan.io/address/0x56c5b5d0dd6ee0934dde01f7240f16c90af16173 <br>
+Contratto DNADAO: https://sepolia.etherscan.io/address/0xfce9b898e6caa81e08f55d4bf950f646d1c656d1
