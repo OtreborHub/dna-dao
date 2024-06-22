@@ -228,6 +228,12 @@ describe("DAO Contract", function () {
         expect(await token.balanceOf(addr2.address)).to.equal(ethers.parseEther("10"));
     });
 
+    it("Should not allow buy Shares if sender is the owner", async function () {
+        const { dao, token, owner } = await loadFixture(deployDAOFixture);
+        await token.connect(owner).approve(dao.getAddress(), ethers.parseEther("10"));
+        await expect (dao.connect(owner).buyShares(10)).to.be.revertedWith("Sender can't be the owner");
+    });
+
     it("Should not allow execute if sender is not the owner", async function () {
         const { dao, token, addr1, addr2, title, description } = await loadFixture(deployDAOFixture);
         await token.connect(addr1).approve(dao.getAddress(), ethers.parseEther("10"));

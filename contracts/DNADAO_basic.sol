@@ -62,6 +62,7 @@ contract DNADAO_basic {
 
     function buyShares(uint256 amount) external {
         require(saleEnabled, "Sale is closed");
+        require(msg.sender != owner, "Sender can't be the owner");
         require(token.transferFrom(msg.sender, address(this), amount * pricePerShare), "Transfer failed");
         shares[msg.sender] += amount;
     }
